@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Size;
 
 public class AplicarVacunaRequest {
 
@@ -18,6 +19,7 @@ public class AplicarVacunaRequest {
     @NotBlank(message = "El nombre del veterinario es obligatorio")
     private String veterinario;
 
+    @Size(max = 255)
     private String observaciones;
 
     public AplicarVacunaRequest() {

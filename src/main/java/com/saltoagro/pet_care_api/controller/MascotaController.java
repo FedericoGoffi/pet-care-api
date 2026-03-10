@@ -3,6 +3,7 @@ package com.saltoagro.pet_care_api.controller;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,28 +22,21 @@ public class MascotaController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('USER')")
     @ResponseStatus(HttpStatus.CREATED)
-    public Mascota crear(
-            @RequestBody Mascota mascota,
-            Authentication authentication) {
-
-        String username = authentication.getName();
-        return mascotaService.guardar(mascota, username);
+    public Mascota crear(@RequestBody Mascota mascota, Authentication auth) {
+        return mascotaService.crear(mascota, auth.getName());
     }
 
     @GetMapping
-    public List<MascotaResponse> listar(Authentication authentication) {
-
-        String username = authentication.getName();
-        return mascotaService.obtenerMisMascotas(username);
+    @PreAuthorize("hasRole('USER')")
+    public List<MascotaResponse> listar(Authentication auth) {
+        return mascotaService.listarDelUsuario(auth.getName());
     }
 
     @GetMapping("/{id}")
-    public MascotaResponse buscarPorId(
-            @PathVariable Long id,
-            Authentication authentication) {
-
-        String username = authentication.getName();
-        return mascotaService.obtenerPorId(id, username);
+    @PreAuthorize("hasRole('USER')")
+    public MascotaResponse buscarPorId(@PathVariable Long id, Authentication auth) {
+        return mascotaService.obtenerPorId(id, auth.getName());
     }
 }

@@ -17,16 +17,9 @@ public class Mascota {
     @Column(nullable = false)
     private String nombre;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id", nullable = false)
-    private Usuario usuario;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Especie especie;
-
-    // @ManyToOne
-    // private Raza raza; // agregar más adelante
 
     private LocalDate fechaNacimiento;
 
@@ -37,16 +30,17 @@ public class Mascota {
 
     private boolean esterilizado;
 
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "usuario_id")
+    private Usuario usuario;
+
     @OneToMany(mappedBy = "mascota", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Vacunacion> vacunaciones = new ArrayList<>();
 
     public Mascota() {
     }
 
-    public Mascota(String nombre, Especie especie) {
-        this.nombre = nombre;
-        this.especie = especie;
-    }
+    // getters & setters
 
     public Long getId() {
         return id;
@@ -58,14 +52,6 @@ public class Mascota {
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
-    }
-
-    public Usuario getUsuario() {
-        return usuario;
-    }
-
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
     }
 
     public Especie getEspecie() {
@@ -108,16 +94,15 @@ public class Mascota {
         this.esterilizado = esterilizado;
     }
 
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
+
     public List<Vacunacion> getVacunaciones() {
         return vacunaciones;
-    }
-
-    public void setVacunaciones(List<Vacunacion> vacunaciones) {
-        this.vacunaciones = vacunaciones;
-    }
-
-    public void agregarVacunacion(Vacunacion vacunacion) {
-        vacunaciones.add(vacunacion);
-        vacunacion.setMascota(this);
     }
 }

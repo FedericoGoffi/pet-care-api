@@ -11,8 +11,6 @@ import com.saltoagro.pet_care_api.dto.AplicarVacunaRequest;
 import com.saltoagro.pet_care_api.dto.VacunacionResponse;
 import com.saltoagro.pet_care_api.service.MascotaService;
 
-import jakarta.validation.Valid;
-
 @RestController
 @RequestMapping("/vacunaciones")
 public class VacunacionController {
@@ -23,18 +21,15 @@ public class VacunacionController {
         this.mascotaService = mascotaService;
     }
 
-    @PreAuthorize("hasAnyRole('VETERINARIO','ADMIN')")
     @PostMapping("/mascotas/{mascotaId}")
+    @PreAuthorize("hasAnyRole('USER','VETERINARIO','ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void aplicarVacuna(
             @PathVariable Long mascotaId,
-            @Valid @RequestBody AplicarVacunaRequest request,
-            Authentication authentication) {
+            @RequestBody AplicarVacunaRequest request,
+            Authentication auth) {
 
-        mascotaService.aplicarVacuna(
-                mascotaId,
-                request,
-                authentication.getName());
+        mascotaService.aplicarVacuna(mascotaId, request, auth.getName());
     }
 
     @GetMapping("/mascotas/{mascotaId}/vencidas")
@@ -43,7 +38,7 @@ public class VacunacionController {
             Authentication authentication) {
 
         String username = authentication.getName();
-        return mascotaService.obtenerVacunasVencidas(mascotaId, username);
+        return mascotaService.vacunasVencidas(mascotaId, username);
     }
 
     @GetMapping("/mascotas/{mascotaId}/por-vencer")
@@ -53,6 +48,6 @@ public class VacunacionController {
             Authentication authentication) {
 
         String username = authentication.getName();
-        return mascotaService.obtenerVacunasPorVencer(mascotaId, dias, username);
+        return mascotaService.vacunasPorVencer(mascotaId, dias, username);
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import com.saltoagro.pet_care_api.dto.AplicarVacunaRequest;
+import com.saltoagro.pet_care_api.dto.MascotaRequest;
 import com.saltoagro.pet_care_api.dto.MascotaResponse;
 import com.saltoagro.pet_care_api.dto.VacunacionResponse;
 import com.saltoagro.pet_care_api.exception.MascotaNoEncontradaException;
@@ -39,13 +40,25 @@ public class MascotaService {
                 this.vacunacionRepository = vacunacionRepository;
         }
 
-        public Mascota crear(Mascota mascota, String username) {
+        // Ahora recibe MascotaRequest (DTO) en lugar de la entidad Mascota.
+        // El mapeo a entidad se hace acá, en el service, donde controlamos
+        // exactamente qué campos se asignan. El usuario se asigna desde
+        // el token JWT, nunca desde el body del request.
+        public MascotaResponse crear(MascotaRequest request, String username) {
 
                 Usuario usuario = usuarioRepository.findByUsername(username)
                                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
+                Mascota mascota = new Mascota();
+                mascota.setNombre(request.nombre());
+                mascota.setEspecie(request.especie());
+                mascota.setFechaNacimiento(request.fechaNacimiento());
+                mascota.setSexo(request.sexo());
+                mascota.setPesoKg(request.pesoKg());
+                mascota.setEsterilizado(request.esterilizado());
                 mascota.setUsuario(usuario);
-                return mascotaRepository.save(mascota);
+
+                return toResponse(mascotaRepository.save(mascota));
         }
 
         public List<MascotaResponse> listarDelUsuario(String username) {

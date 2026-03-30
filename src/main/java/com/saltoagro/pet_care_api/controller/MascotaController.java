@@ -7,9 +7,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import com.saltoagro.pet_care_api.dto.MascotaRequest;
 import com.saltoagro.pet_care_api.dto.MascotaResponse;
-import com.saltoagro.pet_care_api.model.Mascota;
 import com.saltoagro.pet_care_api.service.MascotaService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/mascotas")
@@ -24,8 +26,8 @@ public class MascotaController {
     @PostMapping
     @PreAuthorize("hasRole('USER')")
     @ResponseStatus(HttpStatus.CREATED)
-    public Mascota crear(@RequestBody Mascota mascota, Authentication auth) {
-        return mascotaService.crear(mascota, auth.getName());
+    public MascotaResponse crear(@RequestBody @Valid MascotaRequest request, Authentication auth) {
+        return mascotaService.crear(request, auth.getName());
     }
 
     @GetMapping

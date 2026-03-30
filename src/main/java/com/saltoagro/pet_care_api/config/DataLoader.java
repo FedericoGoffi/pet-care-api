@@ -1,5 +1,6 @@
 package com.saltoagro.pet_care_api.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +13,15 @@ import com.saltoagro.pet_care_api.repository.UsuarioRepository;
 
 @Configuration
 public class DataLoader {
+
+    @Value("${app.admin.password}")
+    private String adminPassword;
+
+    @Value("${app.vet.password}")
+    private String vetPassword;
+
+    @Value("${app.user.password}")
+    private String userPassword;
 
     @Bean
     CommandLineRunner initData(
@@ -34,17 +44,17 @@ public class DataLoader {
 
                 Usuario adminUser = new Usuario();
                 adminUser.setUsername("admin");
-                adminUser.setPassword(encoder.encode("admin123"));
+                adminUser.setPassword(encoder.encode(adminPassword));
                 adminUser.getRoles().add(admin);
 
                 Usuario vetUser = new Usuario();
                 vetUser.setUsername("vet");
-                vetUser.setPassword(encoder.encode("vet123"));
+                vetUser.setPassword(encoder.encode(vetPassword));
                 vetUser.getRoles().add(vet);
 
                 Usuario normalUser = new Usuario();
                 normalUser.setUsername("user");
-                normalUser.setPassword(encoder.encode("user123"));
+                normalUser.setPassword(encoder.encode(userPassword));
                 normalUser.getRoles().add(user);
 
                 userRepo.save(adminUser);

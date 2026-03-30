@@ -48,12 +48,17 @@ public class SecurityConfig {
                                                 .accessDeniedHandler(accessDeniedHandler))
 
                                 .authorizeHttpRequests(auth -> auth
+
+                                                .requestMatchers("/auth/**").permitAll()
+
                                                 .requestMatchers(
-                                                                "/auth/**",
                                                                 "/swagger-ui/**",
                                                                 "/swagger-ui.html",
                                                                 "/v3/api-docs/**")
-                                                .permitAll()
+                                                .hasRole("ADMIN")
+
+                                                .requestMatchers("/actuator/**").hasRole("ADMIN")
+
                                                 .anyRequest().authenticated())
 
                                 .addFilterBefore(

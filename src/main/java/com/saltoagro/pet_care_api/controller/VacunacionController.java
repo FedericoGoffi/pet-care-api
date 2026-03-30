@@ -33,6 +33,7 @@ public class VacunacionController {
     }
 
     @GetMapping("/mascotas/{mascotaId}/vencidas")
+    @PreAuthorize("hasAnyRole('USER','VETERINARIO','ADMIN')")
     public List<VacunacionResponse> vacunasVencidas(
             @PathVariable Long mascotaId,
             Authentication authentication) {
@@ -42,6 +43,7 @@ public class VacunacionController {
     }
 
     @GetMapping("/mascotas/{mascotaId}/por-vencer")
+    @PreAuthorize("hasAnyRole('USER','VETERINARIO','ADMIN')")
     public List<VacunacionResponse> vacunasPorVencer(
             @PathVariable Long mascotaId,
             @RequestParam(defaultValue = "30") int dias,

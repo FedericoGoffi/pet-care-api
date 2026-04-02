@@ -21,6 +21,12 @@ public class VacunacionController {
         this.mascotaService = mascotaService;
     }
 
+    private boolean esPrivilegiado(Authentication auth) {
+        return auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_VETERINARIO")
+                        || a.getAuthority().equals("ROLE_ADMIN"));
+    }
+
     @PostMapping("/mascotas/{mascotaId}")
     @PreAuthorize("hasAnyRole('USER','VETERINARIO','ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -29,17 +35,16 @@ public class VacunacionController {
             @RequestBody AplicarVacunaRequest request,
             Authentication auth) {
 
-        mascotaService.aplicarVacuna(mascotaId, request, auth.getName());
+        mascotaService.aplicarVacuna(mascotaId, request, auth.getName(), esPrivilegiado(auth));
     }
 
     @GetMapping("/mascotas/{mascotaId}/vencidas")
     @PreAuthorize("hasAnyRole('USER','VETERINARIO','ADMIN')")
     public List<VacunacionResponse> vacunasVencidas(
             @PathVariable Long mascotaId,
-            Authentication authentication) {
+            Authentication auth) {
 
-        String username = authentication.getName();
-        return mascotaService.vacunasVencidas(mascotaId, username);
+        return mascotaService.vacunasVencidas(mascotaId, auth.getName(), esPrivilegiado(auth));
     }
 
     @GetMapping("/mascotas/{mascotaId}/por-vencer")
@@ -47,9 +52,8 @@ public class VacunacionController {
     public List<VacunacionResponse> vacunasPorVencer(
             @PathVariable Long mascotaId,
             @RequestParam(defaultValue = "30") int dias,
-            Authentication authentication) {
+            Authentication auth) {
 
-        String username = authentication.getName();
-        return mascotaService.vacunasPorVencer(mascotaId, dias, username);
+        return mascotaService.vacunasPorVencer(mascotaId, dias, auth.getName(), esPrivilegiado(auth));
     }
 }

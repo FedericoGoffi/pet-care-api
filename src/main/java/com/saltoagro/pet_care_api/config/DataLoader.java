@@ -31,14 +31,14 @@ public class DataLoader {
 
         return args -> {
 
-            Rol admin = rolRepo.findByNombre("ROLE_ADMIN")
-                    .orElseGet(() -> rolRepo.save(new Rol("ROLE_ADMIN")));
+            Rol admin = rolRepo.findByNombre("ADMIN")
+                    .orElseGet(() -> rolRepo.save(new Rol("ADMIN")));
 
-            Rol user = rolRepo.findByNombre("ROLE_USER")
-                    .orElseGet(() -> rolRepo.save(new Rol("ROLE_USER")));
+            Rol user = rolRepo.findByNombre("USER")
+                    .orElseGet(() -> rolRepo.save(new Rol("USER")));
 
-            Rol vet = rolRepo.findByNombre("ROLE_VETERINARIO")
-                    .orElseGet(() -> rolRepo.save(new Rol("ROLE_VETERINARIO")));
+            Rol vet = rolRepo.findByNombre("VETERINARIO")
+                    .orElseGet(() -> rolRepo.save(new Rol("VETERINARIO")));
 
             if (userRepo.count() == 0) {
 

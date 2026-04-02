@@ -14,7 +14,6 @@ public class Rol {
     private String nombre;
 
     protected Rol() {
-        // constructor vacío obligatorio para JPA
     }
 
     public Rol(String nombre) {

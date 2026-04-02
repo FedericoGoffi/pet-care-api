@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.saltoagro.pet_care_api.repository.*;
 import com.saltoagro.pet_care_api.dto.AplicarVacunaRequest;
+import com.saltoagro.pet_care_api.dto.MascotaRequest;
 import com.saltoagro.pet_care_api.dto.MascotaResponse;
 import com.saltoagro.pet_care_api.exception.VacunaVigenteException;
 import com.saltoagro.pet_care_api.model.*;
@@ -22,140 +23,154 @@ import com.saltoagro.pet_care_api.model.*;
 @ExtendWith(MockitoExtension.class)
 class MascotaServiceTest {
 
-    @Mock
-    private MascotaRepository mascotaRepository;
+        @Mock
+        private MascotaRepository mascotaRepository;
 
-    @Mock
-    private UsuarioRepository usuarioRepository;
+        @Mock
+        private UsuarioRepository usuarioRepository;
 
-    @Mock
-    private VacunaService vacunaService;
+        @Mock
+        private VacunaService vacunaService;
 
-    @Mock
-    private VacunacionRepository vacunacionRepository;
+        @Mock
+        private VacunacionRepository vacunacionRepository;
 
-    @InjectMocks
-    private MascotaService mascotaService;
+        @InjectMocks
+        private MascotaService mascotaService;
 
-    @Test
-    void deberiaCrearMascota() {
-        String username = "Federico";
+        @Test
+        void deberiaCrearMascota() {
+                String username = "Federico";
 
-        Usuario usuario = new Usuario();
-        usuario.setUsername(username);
+                Usuario usuario = new Usuario();
+                usuario.setUsername(username);
 
-        Mascota mascota = new Mascota();
-        mascota.setNombre("Pepito");
+                MascotaRequest request = new MascotaRequest(
+                                "Pepito",
+                                Especie.PERRO,
+                                null,
+                                null,
+                                null,
+                                false);
 
-        when(usuarioRepository.findByUsername(username))
-                .thenReturn(Optional.of(usuario));
+                Mascota mascotaGuardada = new Mascota();
+                mascotaGuardada.setNombre("Pepito");
+                mascotaGuardada.setUsuario(usuario);
 
-        when(mascotaRepository.save(mascota))
-                .thenReturn(mascota);
+                when(usuarioRepository.findByUsername(username))
+                                .thenReturn(Optional.of(usuario));
 
-        Mascota resultado = mascotaService.crear(mascota, username);
+                when(mascotaRepository.save(any(Mascota.class)))
+                                .thenReturn(mascotaGuardada);
 
-        assertEquals("Pepito", resultado.getNombre());
-        assertEquals(usuario, mascota.getUsuario());
-        verify(mascotaRepository).save(mascota);
-    }
+                MascotaResponse resultado = mascotaService.crear(request, username);
 
-    @Test
-    void deberiaLanzarExcepcionSiUsuarioNoExiste() {
-        String username = "Federico";
+                assertEquals("Pepito", resultado.getNombre());
+                verify(mascotaRepository).save(any(Mascota.class));
+        }
 
-        Mascota mascota = new Mascota();
+        @Test
+        void deberiaLanzarExcepcionSiUsuarioNoExiste() {
+                String username = "Federico";
 
-        when(usuarioRepository.findByUsername(username))
-                .thenReturn(Optional.empty());
+                MascotaRequest request = new MascotaRequest(
+                                "Pepito",
+                                Especie.PERRO,
+                                null,
+                                null,
+                                null,
+                                false);
 
-        assertThrows(RuntimeException.class, () -> {
-            mascotaService.crear(mascota, username);
-        });
-    }
+                when(usuarioRepository.findByUsername(username))
+                                .thenReturn(Optional.empty());
 
-    @Test
-    void deberiaLanzarAccessDeniedSiMascotaNoEsDelUsuario() {
+                assertThrows(RuntimeException.class, () -> {
+                        mascotaService.crear(request, username);
+                });
+        }
 
-        Long mascotaId = 1L;
+        @Test
+        void deberiaLanzarAccessDeniedSiMascotaNoEsDelUsuario() {
 
-        Usuario usuario = new Usuario();
-        usuario.setUsername("Carlos");
+                Long mascotaId = 1L;
 
-        Mascota mascota = new Mascota();
-        mascota.setId(mascotaId);
-        mascota.setNombre("Benjamin");
-        mascota.setUsuario(usuario);
+                Usuario usuario = new Usuario();
+                usuario.setUsername("Carlos");
 
-        when(mascotaRepository.findById(mascotaId))
-                .thenReturn(Optional.of(mascota));
+                Mascota mascota = new Mascota();
+                mascota.setId(mascotaId);
+                mascota.setNombre("Benjamin");
+                mascota.setUsuario(usuario);
 
-        assertThrows(AccessDeniedException.class, () -> {
-            mascotaService.obtenerPorId(mascotaId, "Federico");
-        });
+                when(mascotaRepository.findById(mascotaId))
+                                .thenReturn(Optional.of(mascota));
 
-    }
+                assertThrows(AccessDeniedException.class, () -> {
+                        mascotaService.obtenerPorId(mascotaId, "Federico");
+                });
 
-    @Test
-    void deberiaObtenerMascotaSiPerteneceAlUsuario() {
+        }
 
-        Long mascotaId = 1L;
-        String username = "Federico";
+        @Test
+        void deberiaObtenerMascotaSiPerteneceAlUsuario() {
 
-        Usuario usuario = new Usuario();
-        usuario.setUsername(username);
+                Long mascotaId = 1L;
+                String username = "Federico";
 
-        Mascota mascota = new Mascota();
-        mascota.setId(mascotaId);
-        mascota.setNombre("Benjamin");
-        mascota.setUsuario(usuario);
+                Usuario usuario = new Usuario();
+                usuario.setUsername(username);
 
-        when(mascotaRepository.findById(mascotaId))
-                .thenReturn(Optional.of(mascota));
+                Mascota mascota = new Mascota();
+                mascota.setId(mascotaId);
+                mascota.setNombre("Benjamin");
+                mascota.setUsuario(usuario);
 
-        MascotaResponse resultado = mascotaService.obtenerPorId(mascotaId, username);
+                when(mascotaRepository.findById(mascotaId))
+                                .thenReturn(Optional.of(mascota));
 
-        assertEquals("Benjamin", resultado.getNombre());
-    }
+                MascotaResponse resultado = mascotaService.obtenerPorId(mascotaId, username);
 
-    @Test
-    void deberiaLanzarVacunaVigenteException() {
+                assertEquals("Benjamin", resultado.getNombre());
+        }
 
-        Long mascotaId = 1L;
-        Long vacunaId = 10L;
-        String username = "Federico";
+        @Test
+        void deberiaLanzarVacunaVigenteException() {
 
-        Usuario usuario = new Usuario();
-        usuario.setUsername(username);
+                Long mascotaId = 1L;
+                Long vacunaId = 10L;
+                String username = "Federico";
 
-        Mascota mascota = new Mascota();
-        mascota.setId(mascotaId);
-        mascota.setUsuario(usuario);
+                Usuario usuario = new Usuario();
+                usuario.setUsername(username);
 
-        Vacuna vacuna = new Vacuna();
-        vacuna.setId(vacunaId);
-        vacuna.setNombre("Rabia");
+                Mascota mascota = new Mascota();
+                mascota.setId(mascotaId);
+                mascota.setUsuario(usuario);
 
-        AplicarVacunaRequest request = new AplicarVacunaRequest();
-        request.setVacunaId(vacunaId);
+                Vacuna vacuna = new Vacuna();
+                vacuna.setId(vacunaId);
+                vacuna.setNombre("Rabia");
 
-        when(mascotaRepository.findById(mascotaId))
-                .thenReturn(Optional.of(mascota));
+                AplicarVacunaRequest request = new AplicarVacunaRequest();
+                request.setVacunaId(vacunaId);
 
-        when(vacunaService.obtenerPorId(vacunaId))
-                .thenReturn(vacuna);
+                when(mascotaRepository.findById(mascotaId))
+                                .thenReturn(Optional.of(mascota));
 
-        when(vacunacionRepository
-                .existsByMascotaIdAndVacunaIdAndFechaVencimientoAfter(
-                        eq(mascotaId),
-                        eq(vacunaId),
-                        any()))
-                .thenReturn(true);
+                when(vacunaService.obtenerPorId(vacunaId))
+                                .thenReturn(vacuna);
 
-        assertThrows(VacunaVigenteException.class, () -> {
-            mascotaService.aplicarVacuna(mascotaId, request, username);
-        });
+                when(vacunacionRepository
+                                .existsByMascotaIdAndVacunaIdAndFechaVencimientoAfter(
+                                                eq(mascotaId),
+                                                eq(vacunaId),
+                                                any()))
+                                .thenReturn(true);
 
-    }
+                assertThrows(VacunaVigenteException.class, () -> {
+                        mascotaService.aplicarVacuna(mascotaId, request, username, false);
+                });
+
+        }
 
 }

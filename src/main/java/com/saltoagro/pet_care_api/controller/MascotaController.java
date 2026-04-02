@@ -30,10 +30,17 @@ public class MascotaController {
         return mascotaService.crear(request, auth.getName());
     }
 
+    // USER ve solo sus propias mascotas
     @GetMapping
     @PreAuthorize("hasRole('USER')")
     public List<MascotaResponse> listar(Authentication auth) {
         return mascotaService.listarDelUsuario(auth.getName());
+    }
+
+    @GetMapping("/todas")
+    @PreAuthorize("hasAnyAuthority('ROLE_VETERINARIO', 'ROLE_ADMIN')")
+    public List<MascotaResponse> listarTodas() {
+        return mascotaService.listarTodas();
     }
 
     @GetMapping("/{id}")

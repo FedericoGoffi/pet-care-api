@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.saltoagro.pet_care_api.dto.AplicarVacunaRequest;
 import com.saltoagro.pet_care_api.dto.MascotaRequest;
@@ -21,6 +22,7 @@ import com.saltoagro.pet_care_api.repository.UsuarioRepository;
 import com.saltoagro.pet_care_api.repository.VacunacionRepository;
 
 @Service
+@Transactional
 public class MascotaService {
 
         private final MascotaRepository mascotaRepository;
@@ -40,10 +42,6 @@ public class MascotaService {
                 this.vacunacionRepository = vacunacionRepository;
         }
 
-        // Ahora recibe MascotaRequest (DTO) en lugar de la entidad Mascota.
-        // El mapeo a entidad se hace acá, en el service, donde controlamos
-        // exactamente qué campos se asignan. El usuario se asigna desde
-        // el token JWT, nunca desde el body del request.
         public MascotaResponse crear(MascotaRequest request, String username) {
 
                 Usuario usuario = usuarioRepository.findByUsername(username)
@@ -68,13 +66,18 @@ public class MascotaService {
                                 .toList();
         }
 
+        public List<MascotaResponse> listarTodas() {
+                return mascotaRepository.findAll()
+                                .stream()
+                                .map(this::toResponse)
+                                .toList();
+        }
+
         public MascotaResponse obtenerPorId(Long id, String username) {
-                Mascota mascota = obtenerEntidad(id, username);
-                return toResponse(mascota);
+                return toResponse(obtenerEntidad(id, username));
         }
 
         private Mascota obtenerEntidad(Long id, String username) {
-
                 Mascota mascota = mascotaRepository.findById(id)
                                 .orElseThrow(() -> new MascotaNoEncontradaException(id));
 
@@ -85,15 +88,25 @@ public class MascotaService {
                 return mascota;
         }
 
-        public void aplicarVacuna(Long mascotaId, AplicarVacunaRequest request, String username) {
+        private Mascota obtenerEntidadSinRestriccion(Long id) {
+                return mascotaRepository.findById(id)
+                                .orElseThrow(() -> new MascotaNoEncontradaException(id));
+        }
 
-                Mascota mascota = obtenerEntidad(mascotaId, username);
+        private Mascota resolverMascota(Long id, String username, boolean esPrivilegiado) {
+                return esPrivilegiado
+                                ? obtenerEntidadSinRestriccion(id)
+                                : obtenerEntidad(id, username);
+        }
+
+        public void aplicarVacuna(Long mascotaId, AplicarVacunaRequest request,
+                        String username, boolean esPrivilegiado) {
+
+                Mascota mascota = resolverMascota(mascotaId, username, esPrivilegiado);
                 Vacuna vacuna = vacunaService.obtenerPorId(request.getVacunaId());
 
                 boolean existeVigente = vacunacionRepository.existsByMascotaIdAndVacunaIdAndFechaVencimientoAfter(
-                                mascotaId,
-                                vacuna.getId(),
-                                LocalDate.now());
+                                mascotaId, vacuna.getId(), LocalDate.now());
 
                 if (existeVigente) {
                         throw new VacunaVigenteException(vacuna.getNombre());
@@ -109,8 +122,10 @@ public class MascotaService {
                 vacunacionRepository.save(vacunacion);
         }
 
-        public List<VacunacionResponse> vacunasVencidas(Long mascotaId, String username) {
-                obtenerEntidad(mascotaId, username);
+        public List<VacunacionResponse> vacunasVencidas(Long mascotaId,
+                        String username, boolean esPrivilegiado) {
+
+                resolverMascota(mascotaId, username, esPrivilegiado);
 
                 return vacunacionRepository
                                 .findByMascotaIdAndFechaVencimientoBefore(mascotaId, LocalDate.now())
@@ -119,8 +134,10 @@ public class MascotaService {
                                 .toList();
         }
 
-        public List<VacunacionResponse> vacunasPorVencer(Long mascotaId, int dias, String username) {
-                obtenerEntidad(mascotaId, username);
+        public List<VacunacionResponse> vacunasPorVencer(Long mascotaId, int dias,
+                        String username, boolean esPrivilegiado) {
+
+                resolverMascota(mascotaId, username, esPrivilegiado);
 
                 LocalDate hoy = LocalDate.now();
                 LocalDate limite = hoy.plusDays(dias);

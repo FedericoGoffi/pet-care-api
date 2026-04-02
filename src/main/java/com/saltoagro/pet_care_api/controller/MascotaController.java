@@ -2,6 +2,7 @@ package com.saltoagro.pet_care_api.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -30,7 +31,6 @@ public class MascotaController {
         return mascotaService.crear(request, auth.getName());
     }
 
-    // USER ve solo sus propias mascotas
     @GetMapping
     @PreAuthorize("hasRole('USER')")
     public List<MascotaResponse> listar(Authentication auth) {
@@ -39,8 +39,10 @@ public class MascotaController {
 
     @GetMapping("/todas")
     @PreAuthorize("hasAnyAuthority('ROLE_VETERINARIO', 'ROLE_ADMIN')")
-    public List<MascotaResponse> listarTodas() {
-        return mascotaService.listarTodas();
+    public Page<MascotaResponse> listarTodas(
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "20") int tamanio) {
+        return mascotaService.listarTodas(pagina, tamanio);
     }
 
     @GetMapping("/{id}")

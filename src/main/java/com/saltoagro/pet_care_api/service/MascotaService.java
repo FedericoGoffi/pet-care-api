@@ -3,6 +3,10 @@ package com.saltoagro.pet_care_api.service;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,11 +70,10 @@ public class MascotaService {
                                 .toList();
         }
 
-        public List<MascotaResponse> listarTodas() {
-                return mascotaRepository.findAll()
-                                .stream()
-                                .map(this::toResponse)
-                                .toList();
+        public Page<MascotaResponse> listarTodas(int pagina, int tamanio) {
+                Pageable pageable = PageRequest.of(pagina, tamanio, Sort.by("nombre").ascending());
+                return mascotaRepository.findAll(pageable)
+                                .map(this::toResponse);
         }
 
         public MascotaResponse obtenerPorId(Long id, String username) {

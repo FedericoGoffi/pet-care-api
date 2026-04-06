@@ -76,8 +76,8 @@ public class MascotaService {
                                 .map(this::toResponse);
         }
 
-        public MascotaResponse obtenerPorId(Long id, String username) {
-                return toResponse(obtenerEntidad(id, username));
+        public MascotaResponse obtenerPorId(Long id, String username, boolean esPrivilegiado) {
+                return toResponse(resolverMascota(id, username, esPrivilegiado));
         }
 
         private Mascota obtenerEntidad(Long id, String username) {

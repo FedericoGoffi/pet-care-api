@@ -46,8 +46,11 @@ public class MascotaController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_USER', 'ROLE_VETERINARIO', 'ROLE_ADMIN')")
     public MascotaResponse buscarPorId(@PathVariable Long id, Authentication auth) {
-        return mascotaService.obtenerPorId(id, auth.getName());
+        boolean esPrivilegiado = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_VETERINARIO")
+                        || a.getAuthority().equals("ROLE_ADMIN"));
+        return mascotaService.obtenerPorId(id, auth.getName(), esPrivilegiado);
     }
 }

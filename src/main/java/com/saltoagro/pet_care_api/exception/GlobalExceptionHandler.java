@@ -62,4 +62,15 @@ public class GlobalExceptionHandler {
 
                 return ResponseEntity.badRequest().body(error);
         }
+
+        @ExceptionHandler(RuntimeException.class)
+        public ResponseEntity<ErrorResponse> manejarRuntimeException(
+                        RuntimeException ex) {
+
+                ErrorResponse error = new ErrorResponse(
+                                HttpStatus.BAD_REQUEST.value(),
+                                ex.getMessage());
+
+                return ResponseEntity.badRequest().body(error);
+        }
 }

@@ -19,50 +19,49 @@ import jakarta.validation.Valid;
 @RequestMapping("/auth")
 public class AuthController {
 
-    private final AuthenticationManager authenticationManager;
-    private final JwtService jwtService;
-    private final UsuarioService usuarioService;
+        private final AuthenticationManager authenticationManager;
+        private final JwtService jwtService;
+        private final UsuarioService usuarioService;
 
-    public AuthController(
-            AuthenticationManager authenticationManager,
-            JwtService jwtService,
-            UsuarioService usuarioService) {
+        public AuthController(
+                        AuthenticationManager authenticationManager,
+                        JwtService jwtService,
+                        UsuarioService usuarioService) {
 
-        this.authenticationManager = authenticationManager;
-        this.jwtService = jwtService;
-        this.usuarioService = usuarioService;
-    }
+                this.authenticationManager = authenticationManager;
+                this.jwtService = jwtService;
+                this.usuarioService = usuarioService;
+        }
 
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(
-            @RequestBody @Valid LoginRequest request) {
+        @PostMapping("/login")
+        public ResponseEntity<AuthResponse> login(
+                        @RequestBody @Valid LoginRequest request) {
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getUsername(),
-                        request.getPassword()));
+                Authentication authentication = authenticationManager.authenticate(
+                                new UsernamePasswordAuthenticationToken(
+                                                request.getUsername(),
+                                                request.getPassword()));
 
-        String token = jwtService.generarToken(
-                (org.springframework.security.core.userdetails.User) authentication.getPrincipal());
+                String token = jwtService.generarToken(
+                                (org.springframework.security.core.userdetails.User) authentication.getPrincipal());
 
-        return ResponseEntity.ok(new AuthResponse(token));
-    }
+                return ResponseEntity.ok(new AuthResponse(token));
+        }
 
-    @PostMapping("/registro")
-    @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<AuthResponse> registro(
-            @RequestBody @Valid RegistroRequest request) {
+        @PostMapping("/registro")
+        public ResponseEntity<AuthResponse> registro(
+                        @RequestBody @Valid RegistroRequest request) {
 
-        usuarioService.registrar(request);
+                usuarioService.registrar(request);
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.username(),
-                        request.password()));
+                Authentication authentication = authenticationManager.authenticate(
+                                new UsernamePasswordAuthenticationToken(
+                                                request.username(),
+                                                request.password()));
 
-        String token = jwtService.generarToken(
-                (org.springframework.security.core.userdetails.User) authentication.getPrincipal());
+                String token = jwtService.generarToken(
+                                (org.springframework.security.core.userdetails.User) authentication.getPrincipal());
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(new AuthResponse(token));
-    }
+                return ResponseEntity.status(HttpStatus.CREATED).body(new AuthResponse(token));
+        }
 }
